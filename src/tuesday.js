@@ -53,66 +53,70 @@
 
     this.checkWork = function(callback){
 
-      var messages = [];
-      var valid = false;
+      try {
+        var messages = [];
+        var valid = false;
 
-      var whiteListCheck = [];
-      for (var i = 0; i<this.whiteList.length; i++)
-        whiteListCheck[i] = false;
+        var whiteListCheck = [];
+        for (var i = 0; i<this.whiteList.length; i++)
+          whiteListCheck[i] = false;
 
-      var checkStructure = function(node, parent, structure){
-        for(var i=0; i<structure.length; i++)
-          if(structure[i]['valid'] === true && structure[i]['type'] === parent.type)
-            checkStructure(node, parent, structure[i]['substructure']);
-          else if(structure[i]['type'] === node.type)
-            structure[i]['valid'] = true;
-      }.bind(this);
+        var checkStructure = function(node, parent, structure){
+          for(var i=0; i<structure.length; i++)
+            if(structure[i]['valid'] === true && structure[i]['type'] === parent.type)
+              checkStructure(node, parent, structure[i]['substructure']);
+            else if(structure[i]['type'] === node.type)
+              structure[i]['valid'] = true;
+        }.bind(this);
 
-      var ast = esprima.parse(this.code);
-      estraverse.traverse(ast, {
-        enter: function(node, parent){
-          for(var i = 0; i<this.whiteList.length; i++)
-            if(this.whiteList[i] === node.type)
-              whiteListCheck[i] = true;
+        var ast = esprima.parse(this.code);
+        estraverse.traverse(ast, {
+          enter: function(node, parent){
+            for(var i = 0; i<this.whiteList.length; i++)
+              if(this.whiteList[i] === node.type)
+                whiteListCheck[i] = true;
 
-          for(var i = 0; i<this.blackList.length; i++)
-            if(this.blackList[i] === node.type)
-              messages.push('Your code should not contain a(n) ' + node.type);
+            for(var i = 0; i<this.blackList.length; i++)
+              if(this.blackList[i] === node.type)
+                messages.push('Your code should not contain a(n) ' + node.type);
 
-          checkStructure(node,parent, this.structure);
-        }.bind(this)
-      });
+            checkStructure(node,parent, this.structure);
+          }.bind(this)
+        });
 
-      for (var i = 0; i<whiteListCheck.length; i++)
-        if(!whiteListCheck[i])
-          messages.push('Your code is missing a(n) ' + this.whiteList[i]);
+        for (var i = 0; i<whiteListCheck.length; i++)
+          if(!whiteListCheck[i])
+            messages.push('Your code is missing a(n) ' + this.whiteList[i]);
 
-      var structureMessages = function (structure){
-        var myMessages = [];
+        var structureMessages = function (structure){
+          var myMessages = [];
 
-        for(var i=0; i<structure.length; i++){
-          var insideMessages = structureMessages(structure[i]['substructure']);
-          for(var j=0; j<insideMessages.length; j++){
-            myMessages.push(insideMessages[j] + ' inside of a(n) ' + structure[i]['type']);
+          for(var i=0; i<structure.length; i++){
+            var insideMessages = structureMessages(structure[i]['substructure']);
+            for(var j=0; j<insideMessages.length; j++){
+              myMessages.push(insideMessages[j] + ' inside of a(n) ' + structure[i]['type']);
+            }
+
+            if(structure[i]['valid'] === false)
+              myMessages.push('Your code should have a(n) ' + structure[i]['type']);
           }
 
-          if(structure[i]['valid'] === false)
-            myMessages.push('Your code should have a(n) ' + structure[i]['type']);
+          return myMessages;
+        };
+
+        var newMessages = structureMessages(this.structure);
+        for(var i=0; i<newMessages.length; i++)
+          messages.push(newMessages[i]);
+
+        if(messages.length === 0){
+          messages.push('Your code looks good!');
+          valid = true;
         }
 
-        return myMessages;
-      };
-
-      var newMessages = structureMessages(this.structure);
-      for(var i=0; i<newMessages.length; i++)
-        messages.push(newMessages[i]);
-
-      if(messages.length === 0){
-        messages.push('Your code looks good!');
-        valid = true;
-      }
-
-      callback(valid, messages);
+        callback(valid, messages);
+      }catch(error){
+        callback(false, ['Syntax Error!']);
+       }
 
     };
 
