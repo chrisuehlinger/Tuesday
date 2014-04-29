@@ -147,7 +147,7 @@ exports['structure'] = {
     test.expect(2);
 
     this.testTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
-    this.testTuesday.setCode('for(var i=0; i<100; i++)\n  console.log("Oops!");');
+    this.testTuesday.setCode('for(var i=0; i<100; i++)\n  console.log("Oops!");\n  if(1<2)\n  1+1;');
     this.testTuesday.checkWork(function(valid, messages){
       test.deepEqual(valid, false, 'shouldn\'t pass the test');
       test.deepEqual(messages, ['Your code should have a(n) IfStatement inside of a(n) ForStatement'], 'wrong message');

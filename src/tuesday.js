@@ -60,13 +60,15 @@
       for (var i = 0; i<this.whiteList.length; i++)
         whiteListCheck[i] = false;
 
-      var ast = esprima.parse(this.code);
-
-      var checkStructure = function(node,parent, structure){
+      var checkStructure = function(node, parent, structure){
         for(var i=0; i<structure.length; i++)
-          break;
+          if(structure[i]['valid'] === true && structure[i]['type'] === parent.type)
+            checkStructure(node, parent, structure[i]['substructure']);
+          else if(structure[i]['type'] === node.type)
+            structure[i]['valid'] = true;
       }.bind(this);
 
+      var ast = esprima.parse(this.code);
       estraverse.traverse(ast, {
         enter: function(node, parent){
           for(var i = 0; i<this.whiteList.length; i++)
@@ -77,7 +79,7 @@
             if(this.blackList[i] === node.type)
               messages.push('Your code should not contain a(n) ' + node.type);
 
-          //checkStructure(node,parent, this.structure);
+          checkStructure(node,parent, this.structure);
         }.bind(this)
       });
 
@@ -104,8 +106,6 @@
       var newMessages = structureMessages(this.structure);
       for(var i=0; i<newMessages.length; i++)
         messages.push(newMessages[i]);
-
-      console.log(structureMessages(this.structure));
 
       if(messages.length === 0){
         messages.push('Your code looks good!');
