@@ -38,6 +38,14 @@ module.exports = function (grunt) {
     nodeunit: {
       files: ['test/**/*_test.js']
     },
+    browserify: {
+      dist: {
+        files: {
+          'build/main.browser.js': ['src/main.js'],
+          'build/test.browser.js': ['test/test.js']
+        }
+      }
+    },
     jshint: {
       options: {
         jshintrc: '.jshintrc',
@@ -63,11 +71,11 @@ module.exports = function (grunt) {
       },
       lib: {
         files: '<%= jshint.lib.src %>',
-        tasks: ['jshint:lib', 'nodeunit']
+        tasks: ['jshint:lib', 'browserify', 'nodeunit']
       },
       test: {
         files: '<%= jshint.test.src %>',
-        tasks: ['jshint:test', 'nodeunit']
+        tasks: ['jshint:test', 'browserify',  'nodeunit']
       },
     },
   });

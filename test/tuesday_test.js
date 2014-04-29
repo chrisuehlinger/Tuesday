@@ -1,6 +1,6 @@
 'use strict';
 
-var tuesday = require('../src/tuesday.js');
+var tuesday = require('../src/tuesday');
 
 /*
   ======== A Handy Little Nodeunit Reference ========
@@ -21,19 +21,6 @@ var tuesday = require('../src/tuesday.js');
     test.doesNotThrow(block, [error], [message])
     test.ifError(value)
 */
-
-exports['awesome'] = {
-  setUp: function(done) {
-    // setup here
-    done();
-  },
-  'no args': function(test) {
-    test.expect(1);
-    // tests here
-    test.equal(tuesday.awesome(), 'awesome', 'should be awesome.');
-    test.done();
-  }
-};
 
 exports['constructor'] = {
   'check it exists': function(test) {
@@ -181,12 +168,5 @@ exports['checkWork'] = {
       test.ok(valid);
       test.done();
     });
-  }
-};
-
-exports['validation'] = {
-  setUp: function(done) {
-    this.testTuesday = new tuesday.Tuesday();
-    done();
   }
 };
