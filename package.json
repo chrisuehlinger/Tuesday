@@ -1,0 +1,39 @@
+{
+  "name": "tuesday",
+  "version": "0.0.0",
+  "description": "A JS framework for evaluating JS practice exercises.",
+  "keywords": [
+    "jquery-plugin"
+  ],
+  "homepage": "https://github.com/chrisuehlinger/tuesday",
+  "bugs": "https://github.com/chrisuehlinger/tuesday/issues",
+  "author": {
+    "name": "Chris Uehlinger",
+    "email": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrisuehlinger/tuesday"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-qunit": "~0.2.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-watch": "~0.5.2",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "time-grunt": "~0.1.0",
+    "load-grunt-tasks": "~0.2.0",
+    "jshint-stylish": "~0.1.3",
+    "requirejs": "~2.1.11"
+  },
+  "dependencies": {
+    "esprima": "~1.1.1"
+  }
+}

@@ -1,0 +1,23 @@
+
+
+-Choose Esprima (http://esprima.org/) or Acorn (http://marijnhaverbeke.nl/acorn/)
+	-performance, file size, API quality, and documentation.
+-Provide justification for why you made your decision.
+-Web Workers for non-blocking I/O
+
+
+Esprima vs. Acorn
+I ran some online benchmarks, the results were inconclusive.
+As of 2012, Acorn was half the size of Esprima.
+Acorn looked like a hacked together hobby project, while Esprima struck me as more professional.
+Esprima wins out for documentation. Esprima’s docs include Demos, examples and tutorials. Acorn’s docs consist of an annotated copy of the source, which is more difficult to search and contains unnecessary information.
+
+API
+var tuesday = new Tuesday();
+tuesday.whitelist([“for”, “if”]);
+tuesday.blacklist([“while”, “switch”]);
+tuesday.structure({“for”: {“if”: { }}});
+tuesday.code(codeFromCodeMirror);
+tuesday.start();
+
+
