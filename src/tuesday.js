@@ -19,6 +19,9 @@
 
   exports.Tuesday = function() {
     this.amIReal = 'yes';
+    this.whiteList = [];
+    this.blackList = [];
+    this.structure = [];
 
     this.setWhiteList = function(whiteList){
       this.whiteList = whiteList;
@@ -29,23 +32,88 @@
     };
 
     this.setStructure = function(structure){
-      this.structure = structure;
+      var buildStructure = function(tree){
+        var newStruct = [];
+        for (var type in tree){
+          var newNode = {'type':type, 'valid':false};
+          if(tree[type] !== {}){
+            newNode['substructure'] = buildStructure(tree[type]);
+          }
+          newStruct.push(newNode);
+        }
+        return newStruct;
+      };
+
+      this.structure = buildStructure(structure);
     };
 
     this.setCode = function(code){
       this.code = code;
     };
 
-    this.checkWork = function(finished){
+    this.checkWork = function(callback){
+
+      var messages = [];
+      var valid = false;
+
+      var whiteListCheck = [];
+      for (var i = 0; i<this.whiteList.length; i++)
+        whiteListCheck[i] = false;
+
       var ast = esprima.parse(this.code);
+
+      var checkStructure = function(node,parent, structure){
+        for(var i=0; i<structure.length; i++)
+          break;
+      }.bind(this);
+
       estraverse.traverse(ast, {
-        enter: function(node){
-          if (node.type === 'VariableDeclaration'){
-            console.log('Encountered assignment');
-          }
-        }
+        enter: function(node, parent){
+          for(var i = 0; i<this.whiteList.length; i++)
+            if(this.whiteList[i] === node.type)
+              whiteListCheck[i] = true;
+
+          for(var i = 0; i<this.blackList.length; i++)
+            if(this.blackList[i] === node.type)
+              messages.push('Your code should not contain a(n) ' + node.type);
+
+          //checkStructure(node,parent, this.structure);
+        }.bind(this)
       });
-      finished(ast);
+
+      for (var i = 0; i<whiteListCheck.length; i++)
+        if(!whiteListCheck[i])
+          messages.push('Your code is missing a(n) ' + this.whiteList[i]);
+
+      var structureMessages = function (structure){
+        var myMessages = [];
+
+        for(var i=0; i<structure.length; i++){
+          var insideMessages = structureMessages(structure[i]['substructure']);
+          for(var j=0; j<insideMessages.length; j++){
+            myMessages.push(insideMessages[j] + ' inside of a(n) ' + structure[i]['type']);
+          }
+
+          if(structure[i]['valid'] === false)
+            myMessages.push('Your code should have a(n) ' + structure[i]['type']);
+        }
+
+        return myMessages;
+      };
+
+      var newMessages = structureMessages(this.structure);
+      for(var i=0; i<newMessages.length; i++)
+        messages.push(newMessages[i]);
+
+      console.log(structureMessages(this.structure));
+
+      if(messages.length === 0){
+        messages.push('Your code looks good!');
+        valid = true;
+      }
+
+      callback(valid, messages);
+
     };
 
     return this;

@@ -15,7 +15,7 @@ var tuesday = require('../src/tuesday.js');
     test.notEqual(actual, expected, [message])
     test.deepEqual(actual, expected, [message])
     test.notDeepEqual(actual, expected, [message])
-    test.strictEqual(actual, expected, [message])
+    test.deepEqual(actual, expected, [message])
     test.notStrictEqual(actual, expected, [message])
     test.throws(block, [error], [message])
     test.doesNotThrow(block, [error], [message])
@@ -38,7 +38,10 @@ exports['awesome'] = {
 exports['constructor'] = {
   'check it exists': function(test) {
     var testTuesday = new tuesday.Tuesday();
+
     test.deepEqual(testTuesday.amIReal, 'yes', 'did not construct');
+    test.deepEqual(testTuesday.whiteList, [], 'did not construct');
+    test.deepEqual(testTuesday.blackList, [], 'did not construct');
     test.done();
   }
 };
@@ -52,6 +55,28 @@ exports['whiteList'] = {
     this.testTuesday.setWhiteList(['thing1', 'thing2']);
     test.deepEqual(this.testTuesday.whiteList, ['thing1', 'thing2'], 'Did not set whiteList');
     test.done();
+  },
+  'code passes whitelist': function(test){
+    test.expect(2);
+
+    this.testTuesday.setWhiteList(['VariableDeclaration', 'IfStatement']);
+    this.testTuesday.setCode('var hello = "world";\n  if(hello === "world") console.log("Yay!");');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, true, 'shouldn\'t fail the test');
+      test.deepEqual(messages, ['Your code looks good!'], 'wrong message');
+      test.done();
+    });
+  },
+  'code fails whitelist': function(test){
+    test.expect(2);
+
+    this.testTuesday.setWhiteList(['VariableDeclaration', 'IfStatement']);
+    this.testTuesday.setCode('var hello = "world";');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, false, 'shouldn\'t pass the test');
+      test.deepEqual(messages, ['Your code is missing a(n) IfStatement'], 'wrong message');
+      test.done();
+    });
   }
 };
 
@@ -64,6 +89,28 @@ exports['blackList'] = {
     this.testTuesday.setBlackList(['thing1', 'thing2']);
     test.deepEqual(this.testTuesday.blackList, ['thing1', 'thing2'], 'Did not set blackList');
     test.done();
+  },
+  'code passes blacklist': function(test){
+    test.expect(2);
+
+    this.testTuesday.setBlackList(['SwitchStatement', 'ReturnStatement']);
+    this.testTuesday.setCode('var hello = "world";\n  if(hello === "world") console.log("Yay!");');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, true, 'shouldn\'t fail the test');
+      test.deepEqual(messages, ['Your code looks good!'], 'wrong message');
+      test.done();
+    });
+  },
+  'code fails blacklist': function(test){
+    test.expect(2);
+
+    this.testTuesday.setBlackList(['VariableDeclaration', 'IfStatement']);
+    this.testTuesday.setCode('var hello = "world";');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, false, 'shouldn\'t pass the test');
+      test.deepEqual(messages, ['Your code should not contain a(n) VariableDeclaration'], 'wrong message');
+      test.done();
+    });
   }
 };
 
@@ -74,8 +121,38 @@ exports['structure'] = {
   },
   'init structure': function(test){
     this.testTuesday.setStructure({'thingWiththings':{'thingInThings':{}}});
-    test.deepEqual(this.testTuesday.structure, {'thingWiththings':{'thingInThings':{}}}, 'Did not set structure');
+    test.deepEqual(this.testTuesday.structure,
+                   [ { type: 'thingWiththings',
+                       valid: false,
+                       substructure:[ { type: 'thingInThings',
+                                        valid: false,
+                                        substructure: [] }
+                                    ]
+                   } ],
+                   'Did not set structure');
     test.done();
+  },
+  'code passes structure': function(test){
+    test.expect(2);
+
+    this.testTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
+    this.testTuesday.setCode('for(var i=0; i<100; i++)\n  if(i%3 === 0) console.log("Fizz");');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, true, 'shouldn\'t fail the test');
+      test.deepEqual(messages, ['Your code looks good!'], 'wrong message');
+      test.done();
+    });
+  },
+  'code fails structure': function(test){
+    test.expect(2);
+
+    this.testTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
+    this.testTuesday.setCode('for(var i=0; i<100; i++)\n  console.log("Oops!");');
+    this.testTuesday.checkWork(function(valid, messages){
+      test.deepEqual(valid, false, 'shouldn\'t pass the test');
+      test.deepEqual(messages, ['Your code should have a(n) IfStatement inside of a(n) ForStatement'], 'wrong message');
+      test.done();
+    });
   }
 };
 
@@ -100,9 +177,16 @@ exports['checkWork'] = {
     test.expect(1);
     this.testTuesday.setCode('var hello = "world";\nif(hello==="world") console.log("Yay!");');
 
-    this.testTuesday.checkWork(function(result){
-      test.ok(result);
+    this.testTuesday.checkWork(function(valid, messages){
+      test.ok(valid);
       test.done();
     });
+  }
+};
+
+exports['validation'] = {
+  setUp: function(done) {
+    this.testTuesday = new tuesday.Tuesday();
+    done();
   }
 };
