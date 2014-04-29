@@ -98,9 +98,10 @@ exports['checkWork'] = {
   },
   'see if callback works': function(test){
     test.expect(1);
+    this.testTuesday.setCode('var hello = "world";\nif(hello==="world") console.log("Yay!");');
 
-    this.testTuesday.checkWork(function(parseTree){
-      test.ok(parseTree);
+    this.testTuesday.checkWork(function(result){
+      test.ok(result);
       test.done();
     });
   }

@@ -11,6 +11,7 @@
   'use strict';
 
   var esprima = require('esprima');
+  var estraverse = require('estraverse');
 
   exports.awesome = function() {
     return 'awesome';
@@ -36,7 +37,15 @@
     };
 
     this.checkWork = function(finished){
-      finished(esprima.parse(this.code));
+      var ast = esprima.parse(this.code);
+      estraverse.traverse(ast, {
+        enter: function(node){
+          if (node.type === 'VariableDeclaration'){
+            console.log('Encountered assignment');
+          }
+        }
+      });
+      finished(ast);
     };
 
     return this;
