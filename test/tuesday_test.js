@@ -119,6 +119,11 @@ exports['structure'] = {
                    'Did not set structure');
     test.done();
   },
+  'produce readable structure': function(test){
+    this.testTuesday.setStructure({'thingWiththings':{'thingInThings':{}}});
+    test.deepEqual(this.testTuesday.getStructure(), {'thingWiththings':{'thingInThings':{}}}, 'did not return correct structure');
+    test.done();
+  },
   'code passes structure': function(test){
     test.expect(2);
 

@@ -47,6 +47,17 @@
       this.structure = buildStructure(structure);
     };
 
+    this.getStructure = function(){
+      var helper = function(structure){
+        var newStructure = {};
+        for(var i=0; i<structure.length; i++)
+          newStructure[structure[i]['type']] = helper(structure[i]['substructure']);
+        return newStructure;
+      };
+
+      return helper(this.structure);
+    };
+
     this.setCode = function(code){
       this.code = code;
     };
