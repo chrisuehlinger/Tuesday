@@ -61,26 +61,28 @@
         for (var i = 0; i<this.whiteList.length; i++)
           whiteListCheck[i] = false;
 
-        var checkStructureEnter = function(node, parent, structure){
+        var checkStructureEnter = function(node, structure){
           for(var i=0; i<structure.length; i++)
-            if(structure[i]['numTraversing'] && parent && structure[i]['type'] === parent.type)
-              checkStructureEnter(node, parent, structure[i]['substructure']);
-            else if(structure[i]['type'] === node.type)
+            if(structure[i]['numTraversing'] > 0){
+              checkStructureEnter(node, structure[i]['substructure']);
+            }else if(structure[i]['type'] === node.type){
               structure[i]['valid'] = true;
+              structure[i]['numTraversing']++;
+            }
         }.bind(this);
 
-        var checkStructureLeave = function(node, parent, structure){
+        var checkStructureLeave = function(node, structure){
           for(var i=0; i<structure.length; i++)
-            if(structure[i]['valid'] === true && parent && structure[i]['type'] === parent.type)
-              checkStructureLeave(node, parent, structure[i]['substructure']);
-            else if(structure[i]['type'] === node.type)
-              structure[i]['valid'] = true;
+            if(structure[i]['type'] === node.type)
+              structure[i]['numTraversing']--;
+            else if(structure[i]['numTraversing'] > 0)
+              checkStructureLeave(node, structure[i]['substructure']);
         }.bind(this);
 
         var ast = esprima.parse(this.code);
         //console.log(JSON.stringify(ast));
         estraverse.traverse(ast, {
-          enter: function(node, parent){
+          enter: function(node){
             for(var i = 0; i<this.whiteList.length; i++)
               if(this.whiteList[i] === node.type)
                 whiteListCheck[i] = true;
@@ -89,7 +91,10 @@
               if(this.blackList[i] === node.type)
                 messages.push('Your code should not contain a(n) ' + node.type);
 
-            checkStructure(node,parent, this.structure);
+            checkStructureEnter(node, this.structure);
+          }.bind(this),
+          leave: function(node){
+            checkStructureLeave(node, this.structure);
           }.bind(this)
         });
 

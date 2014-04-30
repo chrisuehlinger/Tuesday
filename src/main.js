@@ -7,9 +7,9 @@ var $ = require('jquery');
 
 var editor = {};
 var myTuesday = new tuesday.Tuesday();
-//myTuesday.setWhiteList(['WhileStatement']);
-myTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
-//myTuesday.setStructure({'ForStatement':{'TryStatement':{'ThrowStatement':{}},'IfStatement':{}}});
+myTuesday.setWhiteList(['WhileStatement']);
+//myTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
+myTuesday.setStructure({'ForStatement':{'TryStatement':{'ThrowStatement':{}},'IfStatement':{}}});
 
 $(document).ready(function() {
   var sampleCode = [
