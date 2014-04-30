@@ -38,12 +38,13 @@ module.exports = function (grunt) {
     nodeunit: {
       files: ['test/**/*_test.js']
     },
-    browserify: {
-      dist: {
-        files: {
-          'build/main.browser.js': ['src/main.js'],
-          'build/test.browser.js': ['test/test.js']
-        }
+    browserify:     {
+      options:      {
+        transform:  [ require('grunt-react').browserify ]
+      },
+      app:          {
+        src:        'src/main.js',
+        dest:       'build/main.browser.js'
       }
     },
     jshint: {

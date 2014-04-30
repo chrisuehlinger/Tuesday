@@ -35,7 +35,7 @@
       var buildStructure = function(tree){
         var newStruct = [];
         for (var type in tree){
-          var newNode = {'type':type, 'valid':false};
+          var newNode = {'type':type, 'valid':false, 'numTraversing':0};
           if(tree[type] !== {}){
             newNode['substructure'] = buildStructure(tree[type]);
           }
@@ -61,15 +61,24 @@
         for (var i = 0; i<this.whiteList.length; i++)
           whiteListCheck[i] = false;
 
-        var checkStructure = function(node, parent, structure){
+        var checkStructureEnter = function(node, parent, structure){
           for(var i=0; i<structure.length; i++)
-            if(structure[i]['valid'] === true && structure[i]['type'] === parent.type)
-              checkStructure(node, parent, structure[i]['substructure']);
+            if(structure[i]['numTraversing'] && parent && structure[i]['type'] === parent.type)
+              checkStructureEnter(node, parent, structure[i]['substructure']);
+            else if(structure[i]['type'] === node.type)
+              structure[i]['valid'] = true;
+        }.bind(this);
+
+        var checkStructureLeave = function(node, parent, structure){
+          for(var i=0; i<structure.length; i++)
+            if(structure[i]['valid'] === true && parent && structure[i]['type'] === parent.type)
+              checkStructureLeave(node, parent, structure[i]['substructure']);
             else if(structure[i]['type'] === node.type)
               structure[i]['valid'] = true;
         }.bind(this);
 
         var ast = esprima.parse(this.code);
+        //console.log(JSON.stringify(ast));
         estraverse.traverse(ast, {
           enter: function(node, parent){
             for(var i = 0; i<this.whiteList.length; i++)
@@ -115,7 +124,8 @@
 
         callback(valid, messages);
       }catch(error){
-        callback(false, ['Syntax Error!']);
+        callback(false, ['Syntax Error: ' + error.message]);
+        //throw error;
        }
 
     };

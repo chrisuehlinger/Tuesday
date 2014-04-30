@@ -40,7 +40,8 @@
     "nodeunit": "~0.8.7",
     "nodeunit-browser-tap": "0.0.4",
     "grunt-testling": "~1.0.0",
-    "testling": "~1.6.1"
+    "testling": "~1.6.1",
+    "grunt-react": "~0.8.2"
   },
   "dependencies": {
     "esprima": "~1.1.1",

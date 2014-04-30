@@ -110,9 +110,9 @@ exports['structure'] = {
     this.testTuesday.setStructure({'thingWiththings':{'thingInThings':{}}});
     test.deepEqual(this.testTuesday.structure,
                    [ { type: 'thingWiththings',
-                       valid: false,
+                       valid: false, 'numTraversing':0,
                        substructure:[ { type: 'thingInThings',
-                                        valid: false,
+                                        valid: false, 'numTraversing':0,
                                         substructure: [] }
                                     ]
                    } ],
@@ -123,7 +123,23 @@ exports['structure'] = {
     test.expect(2);
 
     this.testTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
-    this.testTuesday.setCode('for(var i=0; i<100; i++)\n  if(i%3 === 0) console.log("Fizz");');
+
+        var sampleCode = [
+    'for(var i=0; i<100; i++){',
+    '  if(i%3 === 0 && i%5 === 0)',
+    '    console.log("FizzBuzz");',
+    '  else if(i%3 === 0)',
+    '    console.log("Fizz");',
+    '  else if(i%5 === 0)',
+    '    console.log("Buzz");',
+    '  else',
+    '    console.log(i);',
+    '}',
+    '',
+    'while(1){}'].join('\n');
+
+    this.testTuesday.setCode(sampleCode);
+    //this.testTuesday.setCode('for(var i=0; i<100; i++)\n  if(i%3 === 0) console.log("Fizz");');
     this.testTuesday.checkWork(function(valid, messages){
       test.deepEqual(valid, true, 'shouldn\'t fail the test');
       test.deepEqual(messages, ['Your code looks good!'], 'wrong message');
@@ -134,6 +150,9 @@ exports['structure'] = {
     test.expect(2);
 
     this.testTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
+
+
+
     this.testTuesday.setCode('for(var i=0; i<100; i++)\n  console.log("Oops!");\n  if(1<2)\n  1+1;');
     this.testTuesday.checkWork(function(valid, messages){
       test.deepEqual(valid, false, 'shouldn\'t pass the test');

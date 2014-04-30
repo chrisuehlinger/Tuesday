@@ -7,7 +7,9 @@ var $ = require('jquery');
 
 var editor = {};
 var myTuesday = new tuesday.Tuesday();
-myTuesday.setWhiteList(['WhileStatement']);
+//myTuesday.setWhiteList(['WhileStatement']);
+myTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
+//myTuesday.setStructure({'ForStatement':{'TryStatement':{'ThrowStatement':{}},'IfStatement':{}}});
 
 $(document).ready(function() {
   var sampleCode = [
@@ -35,6 +37,7 @@ $(document).ready(function() {
     myTuesday.checkWork(function(valid,messages){
       var messageSpace = $('#messageSpace').empty();
       for(var i=0; i<messages.length; i++){
+        console.log(messages[i]);
         if(valid)
           messageSpace.append('<div class="correct message">' + messages[i] + '</div>');
         else
