@@ -1,0 +1,39 @@
+body{
+  width: 600px;
+  margin: auto;
+  font-family: Helvetica;
+}
+
+h1 {
+  font-family: monospace;
+}
+
+.CodeMirror {
+  border-radius: 5px;
+}
+
+.message {
+  border-radius: 5px;
+  padding: 10px;
+  margin: 3px auto;
+}
+
+[data-valid="true"] {
+  color: white;
+  background: blue;
+}
+
+[data-valid="false"] {
+  color: white;
+  background: red;
+}
+
+.testForm{
+  text-align: right;
+}
+
+.testForm input[type="text"] {
+  width:400px;
+  margin: 5px;
+  font-family:monospace;
+}
