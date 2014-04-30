@@ -38,6 +38,13 @@ module.exports = function (grunt) {
     nodeunit: {
       files: ['test/**/*_test.js']
     },
+    react: {
+      single_file_output: {
+        files: {
+          'src/main.js':'src/main.jsx.js'
+        }
+      }
+    },
     browserify:     {
       options:      {
         transform:  [ require('grunt-react').browserify ]
@@ -72,11 +79,11 @@ module.exports = function (grunt) {
       },
       lib: {
         files: '<%= jshint.lib.src %>',
-        tasks: ['jshint:lib', 'browserify', 'nodeunit']
+        tasks: ['jshint:lib', 'react:single_file_output', 'browserify', 'nodeunit']
       },
       test: {
         files: '<%= jshint.test.src %>',
-        tasks: ['jshint:test', 'browserify',  'nodeunit']
+        tasks: ['jshint:test', 'react:single_file_output', 'browserify',  'nodeunit']
       },
     },
   });

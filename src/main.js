@@ -1,15 +1,54 @@
+/**
+  * @jsx React.DOM
+  */
+
 'use strict';
 
 var tuesday = require('./tuesday');
-//var CodeMirror = require('code-mirror');
 var CodeMirror = require('code-mirror/mode/javascript');
 var $ = require('jquery');
 
 var editor = {};
 var myTuesday = new tuesday.Tuesday();
 myTuesday.setWhiteList(['WhileStatement']);
-//myTuesday.setStructure({'ForStatement':{'IfStatement':{}}});
 myTuesday.setStructure({'ForStatement':{'TryStatement':{'ThrowStatement':{}},'IfStatement':{}}});
+
+var MessageBox = React.createClass({displayName: 'MessageBox',
+  getInitialState:function(){
+    return {valid:   true,
+            messages: ['Type Something!']};
+  },
+  updateMessages:function(){
+    console.log("Whoopy");
+    myTuesday.checkWork(function(valid, messages){
+      this.setState({valid: valid,
+                     messages: messages});
+    }.bind(this));
+  },
+  componentWillMount:function(){
+    this.updateMessages();
+    setInterval(this.updateMessages, this.props.pollInterval);
+  },
+  render: function(){
+    var messageNodes = this.state.messages.map(function(message){
+      return Message( {valid:this.state.valid, message:message} );
+    }.bind(this));
+
+    return (
+      React.DOM.div( {className:"messageBox"}, 
+        messageNodes
+      )
+    );
+  }
+});
+
+var Message = React.createClass({displayName: 'Message',
+  render: function(){
+    return (
+      React.DOM.div( {className:"message", 'data-valid':this.props.valid}, this.props.message)
+    );
+  }
+});
 
 $(document).ready(function() {
   var sampleCode = [
@@ -34,15 +73,9 @@ $(document).ready(function() {
 
   editor.on("change", function(){
     myTuesday.setCode(editor.getValue());
-    myTuesday.checkWork(function(valid,messages){
-      var messageSpace = $('#messageSpace').empty();
-      for(var i=0; i<messages.length; i++){
-        console.log(messages[i]);
-        if(valid)
-          messageSpace.append('<div class="correct message">' + messages[i] + '</div>');
-        else
-          messageSpace.append('<div class="incorrect message">' + messages[i] + '</div>');
-      }
-    });
   });
+
+  React.renderComponent(
+                             MessageBox( {pollInterval:1000}),
+                             document.getElementById('MessageBox'));
 });
