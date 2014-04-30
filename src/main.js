@@ -8,13 +8,18 @@ var tuesday = require('./tuesday');
 var CodeMirror = require('code-mirror/mode/javascript');
 var $ = require('jquery');
 
+//This component is the form for defining constraints.
+//The handleChange function is called whenever one of the inputs is edited.
 var TestForm = React.createClass({displayName: 'TestForm',
   getInitialState: function(){
     return {whiteList:'WhileStatement',
-            blackList:'FunctionDeclaration',
+            blackList:'VariableDeclaration',
             structure:JSON.stringify({ForStatement:{TryStatement:{ThrowStatement:{}},IfStatement:{}}})}
   },
   handleChange: function(){
+
+    //If one of the fields is empty, pass in an empty list,
+    //not a list with an empty string
     var whiteListText = this.refs.whiteList.getDOMNode().value.trim();
     if(whiteListText.length > 0)
       this.props.tuesday.setWhiteList(whiteListText.split(' '));
@@ -94,10 +99,15 @@ var Message = React.createClass({displayName: 'Message',
   }
 });
 
+//This component manages most of the state for the app
 var App = React.createClass({displayName: 'App',
   getInitialState: function(){
     var myTuesday = new tuesday.Tuesday();
+
+    //Initializing like this is redundant and not ideal
+    //Given more time, I'd rethink how I'm managing state
     myTuesday.setWhiteList(['WhileStatement']);
+    myTuesday.setBlackList(['VariableDeclaration']);
     myTuesday.setStructure({ForStatement:{TryStatement:{ThrowStatement:{}},IfStatement:{}}});
 
     return {tuesday: myTuesday,
@@ -115,53 +125,37 @@ var App = React.createClass({displayName: 'App',
             valid: true,
             messages: ['Type Something!']};
   },
-  handleSubmit: function(){
-
-
-    this.state.tuesday.checkWork(this.updateMessages)
-  },
-  updateMessages:function(){
-    this.state.tuesday.checkWork(function(valid, messages){
+  updateMessages:function(valid, messages){
       this.setState({valid: valid,
                      messages: messages});
-    }.bind(this));
   },
   render: function(){
     return (
       React.DOM.div( {className:"app"}, 
       TestForm( {tuesday:this.state.tuesday,
-                handleSubmit:this.handleSubmit}),
-        React.DOM.textarea( {id:"editor"}),
+                handleSubmit:this.updateMessages}),
+      React.DOM.textarea( {id:"editor"}, this.state.code),
       MessageBox( {valid:this.state.valid, messages:this.state.messages})
       )
     );
   },
   componentDidMount: function(){
-    var sampleCode = [
-    'for(var i=0; i<100; i++){',
-    '  if(i%3 === 0 && i%5 === 0)',
-    '    console.log("FizzBuzz");',
-    '  else if(i%3 === 0)',
-    '    console.log("Fizz");',
-    '  else if(i%5 === 0)',
-    '    console.log("Buzz");',
-    '  else',
-    '    console.log(i);',
-    '}'].join('\n');
+    //After this component renders, spin up a CodeMirror instance
+    this.state.editor = CodeMirror.fromTextArea($('#editor')[0], {
+      mode: "javascript",
+      theme: "monokai",
+      lineNumbers: true,
+      autofocus: true
+    });
 
-  this.state.editor = CodeMirror.fromTextArea($('#editor')[0], {
-    mode: "javascript",
-    theme: "monokai",
-    lineNumbers: true,
-    autofocus: true
-  });
-  this.state.editor.setValue(this.state.code);
-  this.state.tuesday.setCode(this.state.code);
+    //Getting CodeMirror to play by React's rules is a bit weird,
+    //but this gets the job done for now.
+    this.state.tuesday.setCode(this.state.code);
 
-  this.state.editor.on("change", function(){
-    this.state.tuesday.setCode(this.state.editor.getValue());
-    this.state.tuesday.checkWork(this.updateMessages)
-  }.bind(this));
+    this.state.editor.on("change", function(){
+      this.state.tuesday.setCode(this.state.editor.getValue());
+      this.state.tuesday.checkWork(this.updateMessages)
+    }.bind(this));
 
   }
 });

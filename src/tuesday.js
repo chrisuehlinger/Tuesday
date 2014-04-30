@@ -13,10 +13,6 @@
   var esprima = require('esprima');
   var estraverse = require('estraverse');
 
-  exports.awesome = function() {
-    return 'awesome';
-  };
-
   exports.Tuesday = function() {
     this.amIReal = 'yes';
     this.whiteList = [];
@@ -32,10 +28,17 @@
     };
 
     this.setStructure = function(structure){
+
+      //This function takes easy to read structures and
+      //converts them to a format that is more useful
+      //when traversing the parse tree
       var buildStructure = function(tree){
         var newStruct = [];
         for (var type in tree){
-          var newNode = {'type':type, 'valid':false, 'numTraversing':0};
+          var newNode = {'type':type,        // The type of the node
+                         'valid':false,      // Whether an instance of this node has been found (within the parent nodes)
+                         'numTraversing':0}; // How many times we've seen a node of this type at this depth in the parse tree
+
           if(tree[type] !== {}){
             newNode['substructure'] = buildStructure(tree[type]);
           }
@@ -47,6 +50,7 @@
       this.structure = buildStructure(structure);
     };
 
+    //This function converts the interior format back into an easy to read structure
     this.getStructure = function(){
       var helper = function(structure){
         var newStructure = {};
@@ -68,10 +72,13 @@
         var messages = [];
         var valid = false;
 
+
         var whiteListCheck = [];
         for (var i = 0; i<this.whiteList.length; i++)
           whiteListCheck[i] = false;
 
+        //On the way down the parse tree, check if the node type has been seen before.
+        //If it has, move down the suggested structure tree looking for matches.
         var checkStructureEnter = function(node, structure){
           for(var i=0; i<structure.length; i++)
             if(structure[i]['numTraversing'] > 0){
@@ -82,6 +89,8 @@
             }
         }.bind(this);
 
+        //On the way up the parse tree, decrement "numTraversing" for node types as we leave them.
+        //This method also limits the amount of the suggested structure that gets traversed at each node.
         var checkStructureLeave = function(node, structure){
           for(var i=0; i<structure.length; i++)
             if(structure[i]['type'] === node.type)
@@ -92,6 +101,10 @@
 
         var ast = esprima.parse(this.code);
         //console.log(JSON.stringify(ast));
+
+        //Estraverse lets you set a callback for entering and leaving nodes
+        //The "enter" callback is used for checking against the white and black list
+        //Both callbacks are needed for checking the suggested structure.
         estraverse.traverse(ast, {
           enter: function(node){
             for(var i = 0; i<this.whiteList.length; i++)
@@ -109,10 +122,14 @@
           }.bind(this)
         });
 
+        //After traversing the whole tree, any white list entries
+        //that haven't been found must be missing
         for (var i = 0; i<whiteListCheck.length; i++)
           if(!whiteListCheck[i])
             messages.push('Your code is missing a(n) ' + this.whiteList[i]);
 
+        //This recursive function produces messages describing
+        //which parts of the suggested structure are missing
         var structureMessages = function (structure){
           var myMessages = [];
 
@@ -133,6 +150,7 @@
         for(var i=0; i<newMessages.length; i++)
           messages.push(newMessages[i]);
 
+        //If there are no messages, then the code must be valid
         if(messages.length === 0){
           messages.push('Your code looks good!');
           valid = true;
@@ -140,8 +158,9 @@
 
         callback(valid, messages);
       }catch(error){
+        //If there is a syntax error in the code,
+        //it'll throw a SyntaxError when esprima tries to parse it
         callback(false, ['Syntax Error: ' + error.message]);
-        //throw error;
        }
 
     };
